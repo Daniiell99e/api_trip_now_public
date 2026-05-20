@@ -16,7 +16,7 @@ const upload = multer({
     storage,
     // 1. Filtro para aceitar apenas imagens
     fileFilter: (req, file, cb) => {
-        const formatosAceitos = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+        const formatosAceitos = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif'];
         
         if (formatosAceitos.includes(file.mimetype)) {
             cb(null, true); // Arquivo aprovado!
@@ -24,9 +24,9 @@ const upload = multer({
             cb(new Error('Formato inválido! Envie apenas imagens (JPG, PNG ou WEBP).'), false); // Bloqueia o arquivo
         }
     },
-    // 2. Limite de tamanho (5MB) para não lotar o Cloudinary
+    // 2. Limite de tamanho (10MB) para não lotar o Cloudinary
     limits: {
-        fileSize: 5 * 1024 * 1024 
+        fileSize: 10 * 1024 * 1024 
     }
 });
 
@@ -53,5 +53,6 @@ roteiroRoutes.post('/import', ExternalApiController.importRoteiro);
 roteiroRoutes.post('/:roteiroId/atracoes', roteiroAtracaoController.create);
 roteiroRoutes.get('/:roteiroId/sugestoes-atracoes', AtracaoSugestaoController.getSugestoes);
 roteiroRoutes.patch('/atividades/:id/fotos', upload.single('foto'), roteiroAtracaoController.uploadFoto);
+roteiroRoutes.delete('/atividades/:id/fotos', roteiroAtracaoController.removerFoto);
 
 module.exports = roteiroRoutes;

@@ -3,6 +3,7 @@ const RoteiroAtracao = require('../models/RoteiroAtracao');
 const Roteiro = require('../models/Roteiro');
 const AtracoesTuristicas = require('../models/AtracaoTuristica');
 const LogsAtividades = require('../models/LogsAtividades');
+const { cloudinary } = require('../../configs/cloudinary');
 
 class RoteiroAtracaoController {
 
@@ -213,6 +214,77 @@ class RoteiroAtracaoController {
       });
     }
   }
+  /**
+   * Remove uma foto específica de uma atividade, tanto do Cloudinary quanto do banco de dados.
+   */
+  async removerFoto(req, res) {
+    try {
+      const { id } = req.params; // ID da RoteiroAtracao (atividade)
+      const { userId } = req;
+      const { fotoUrl } = req.body; // URL da imagem enviada pelo frontend
+
+      if (!fotoUrl) {
+        return res.status(400).json({ message: 'A URL da foto é obrigatória para exclusão.' });
+      }
+
+      // 1. Localizar a atividade e verificar se o roteiro pertence ao usuário logado
+      const atividade = await RoteiroAtracao.findOne({
+        where: { id },
+        include: [{
+          model: Roteiro,
+          as: 'roteiro',
+          attributes: ['user_id']
+        }]
+      });
+
+      if (!atividade) {
+        return res.status(404).json({ message: 'Atividade não encontrada.' });
+      }
+
+      if (atividade.roteiro.user_id !== userId) {
+        return res.status(403).json({ message: 'Você não tem permissão para alterar este roteiro.' });
+      }
+
+      // 2. Extrair o Public ID do Cloudinary a partir da URL
+      const urlParts = fotoUrl.split('/');
+      const arquivoComExtensao = urlParts.pop(); // ex: "imagem.jpg"
+      const pasta = urlParts.pop(); // ex: "fotos"
+      const nomeArquivo = arquivoComExtensao.split('.')[0]; // ex: "imagem"
+      
+      const publicId = `${pasta}/${nomeArquivo}`;
+
+      // 3. Deletar a imagem fisicamente do Cloudinary
+      await cloudinary.uploader.destroy(publicId);
+
+      // 4. Atualizar o banco de dados (Removendo a URL específica do ARRAY do Postgres)
+      await atividade.update({
+        fotos: db.connection.fn('array_remove', db.connection.col('fotos'), fotoUrl)
+      });
+
+      // 5. Registrar a ação no LogsAtividades
+      await LogsAtividades.create({
+        user_id: userId,
+        tipo_acao: 'EXCLUIR_FOTO',
+        tipo_entidade: 'ROTEIRO_ATRACAO',
+        entidade_id: id,
+        descricao: `Usuário removeu uma foto do passeio no roteiro.`,
+        endereco_ip: req.ip,
+        user_agent: req.headers['user-agent']
+      });
+
+      // Retorna 204 No Content (Padrão de sucesso para DELETE, sem corpo na resposta)
+      return res.status(204).send();
+
+    } catch (error) {
+      console.error('Erro ao excluir foto:', error);
+      return res.status(500).json({ 
+        message: 'Falha ao processar a exclusão da foto.', 
+        details: error.message 
+      });
+    }
+  }
+
 }
+
 
 module.exports = new RoteiroAtracaoController();
