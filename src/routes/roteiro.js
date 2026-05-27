@@ -54,5 +54,7 @@ roteiroRoutes.post('/:roteiroId/atracoes', roteiroAtracaoController.create);
 roteiroRoutes.get('/:roteiroId/sugestoes-atracoes', AtracaoSugestaoController.getSugestoes);
 roteiroRoutes.patch('/atividades/:id/fotos', upload.single('foto'), roteiroAtracaoController.uploadFoto);
 roteiroRoutes.delete('/atividades/:id/fotos', roteiroAtracaoController.removerFoto);
+roteiroRoutes.delete('/atividades/:roteiroAtracaoId', roteiroAtracaoController.delete);
+roteiroRoutes.patch('/atividades/:roteiroAtracaoId', roteiroAtracaoController.update);
 
 module.exports = roteiroRoutes;

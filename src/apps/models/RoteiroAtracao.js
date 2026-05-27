@@ -14,7 +14,8 @@ class RoteiroAtracoes extends Model {
       roteiro_id: Sequelize.INTEGER,
       atracao_id: Sequelize.INTEGER,
       numero_dia: Sequelize.INTEGER,
-      horario: Sequelize.STRING,
+      horario_inicio: Sequelize.STRING,
+      horario_fim: Sequelize.STRING,
       ordem_no_dia: Sequelize.INTEGER,
       anotacoes: Sequelize.TEXT,
       // 2. Avisar ao modelo que a coluna fotos agora existe no banco

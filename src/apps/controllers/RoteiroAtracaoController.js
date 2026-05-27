@@ -19,7 +19,8 @@ class RoteiroAtracaoController {
         atracao_id,
         nova_atracao,
         numero_dia,
-        horario,
+        horario_inicio, 
+        horario_fim,
         ordem_no_dia,
         anotacoes
       } = req.body;
@@ -58,13 +59,18 @@ class RoteiroAtracaoController {
         await t.rollback();
         return res.status(400).json({ message: 'Forneça "atracao_id" ou "nova_atracao".' });
       }
+      // Validação básica de horário
+      if (horario_inicio && horario_fim && horario_fim < horario_inicio) {
+        await t.rollback();
+        return res.status(400).json({ message: 'O horário de término não pode ser anterior ao horário de início.' });
+      }
 
       // Cria o vínculo
       const novaAtividade = await RoteiroAtracao.create({
         roteiro_id: roteiroId,
         atracao_id: atracaoInstance.id,
-        numero_dia,
-        horario,
+        horario_inicio, 
+        horario_fim,
         ordem_no_dia: ordem_no_dia || 1,
         anotacoes,
         status: 'pendente'
@@ -76,7 +82,8 @@ class RoteiroAtracaoController {
           id: novaAtividade.id,
           roteiro_id: roteiroId,
           numero_dia: numero_dia,
-          horario: horario,
+          horario_inicio: horario_inicio,
+          horario_fim: horario_fim,
           atracao: atracaoInstance
       };
 
@@ -94,7 +101,7 @@ class RoteiroAtracaoController {
     try {
       const { roteiroAtracaoId } = req.params;
       const { userId } = req;
-      const { numero_dia, horario, ordem_no_dia, anotacoes } = req.body;
+      const { numero_dia, horario_inicio, horario_fim, ordem_no_dia, anotacoes } = req.body;
 
       const atividade = await RoteiroAtracao.findOne({
         where: { id: roteiroAtracaoId },
@@ -110,9 +117,14 @@ class RoteiroAtracaoController {
       if (atividade.roteiro.user_id !== userId) {
         return res.status(403).json({ message: 'Sem permissão.' });
       }
+      // Validação: garante que não gravem o fim antes do início
+      if (horario_inicio && horario_fim && horario_fim < horario_inicio) {
+        return res.status(400).json({ message: 'O horário de término não pode ser anterior ao horário de início.' });
+      }
+
 
       const atividadeAtualizada = await atividade.update({
-        numero_dia, horario, ordem_no_dia, anotacoes
+        numero_dia, horario_inicio, horario_fim, ordem_no_dia, anotacoes
       });
 
       return res.status(200).json(atividadeAtualizada);
