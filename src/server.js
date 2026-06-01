@@ -18,8 +18,33 @@ const { globalLimiter } = require('./apps/middlewares/rateLimiters');
 
 const app = express();
 
-// Ativa todos os cabeçalhos de segurança padrão
-app.use(helmet());
+// Ativa todos os cabeçalhos de segurança padrão e configurações avançadas do ZAP
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            objectSrc: ["'none'"],
+            frameSrc: ["'none'"],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin" }
+}));
+
+// Middlewares de segurança adicionais
+app.use((req, res, next) => {
+    // Permissions-Policy
+    res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+    
+    // Cache-Control
+    if (req.method === 'GET' && req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    }
+    next();
+});
 
 // Ativa o log seguro de requisições web (apenas se não estiver rodando testes)
 if (process.env.NODE_ENV !== 'test') {
@@ -30,7 +55,7 @@ if (process.env.NODE_ENV !== 'test') {
 // Configuração explícita do CORS para permitir credenciais (cookies)
 // e cabeçalhos específicos da origem do seu frontend.
 app.use(cors({
-    origin: 'http://localhost:3000', // Permite requisições apenas desta origem
+    origin: process.env.CORS_ORIGINS?.split(',') || 'http://localhost:3000', // Permite requisições apenas desta origem
     credentials: true, // Permite que o navegador envie cookies
     allowedHeaders: ['Content-Type', 'Authorization'], // Permite explicitamente esses cabeçalhos
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Permite esses métodos HTTP
