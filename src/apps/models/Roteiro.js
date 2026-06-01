@@ -40,14 +40,14 @@ class Roteiro extends Model {
       this.belongsTo(models.Users, { foreignKey: 'user_id', as: 'usuario' });
       this.belongsTo(models.Cidade, { foreignKey: 'cidade_id', as: 'cidade' });
 
-      this.hasMany(models.RoteiroAtracoes, { foreignKey: 'roteiro_id', as: 'roteiroAtracoes' });
-      this.hasMany(models.RoteiroTags, { foreignKey: 'roteiro_id', as: 'tags' });
-      this.hasMany(models.RoteiroCurtida, { foreignKey: 'roteiro_id', as: 'curtidas' });
-      this.hasMany(models.RoteiroComentarios, { foreignKey: 'roteiro_id', as: 'comentarios' });
-      this.hasMany(models.UserCupom, { foreignKey: 'roteiro_id', as: 'cuponsUsados' });
-      this.hasMany(models.RoteiroDespesas, { foreignKey: 'roteiro_id', as: 'despesas' });
-      this.hasMany(models.RoteirosSalvos, { foreignKey: 'roteiro_id', as: 'salvosPor' });
-      this.hasMany(models.TransacoesReceita, { foreignKey: 'roteiro_id', as: 'transacoes' });
+      this.hasMany(models.RoteiroAtracoes, { foreignKey: 'roteiro_id', as: 'roteiroAtracoes', onDelete: 'CASCADE' });
+      this.hasMany(models.RoteiroTags, { foreignKey: 'roteiro_id', as: 'tags', onDelete: 'CASCADE' });
+      this.hasMany(models.RoteiroCurtida, { foreignKey: 'roteiro_id', as: 'curtidas', onDelete: 'CASCADE' });
+      this.hasMany(models.RoteiroComentarios, { foreignKey: 'roteiro_id', as: 'comentarios', onDelete: 'CASCADE' });
+      this.hasMany(models.UserCupom, { foreignKey: 'roteiro_id', as: 'cuponsUsados', onDelete: 'CASCADE' });
+      this.hasMany(models.RoteiroDespesas, { foreignKey: 'roteiro_id', as: 'despesas', onDelete: 'CASCADE' });
+      this.hasMany(models.RoteirosSalvos, { foreignKey: 'roteiro_id', as: 'salvosPor', onDelete: 'CASCADE' });
+      this.hasMany(models.TransacoesReceita, { foreignKey: 'roteiro_id', as: 'transacoes', onDelete: 'CASCADE' });
 
       this.belongsToMany(models.AtracoesTuristicas, {
         through: models.RoteiroAtracoes,

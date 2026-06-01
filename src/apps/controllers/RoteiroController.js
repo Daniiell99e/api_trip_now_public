@@ -6,6 +6,7 @@ const Pais = require('../models/Pais');
 const AtracoesTuristicas = require('../models/AtracaoTuristica'); // Verifique o nome do arquivo
 const RoteiroAtracao = require('../models/RoteiroAtracao');
 const Database = require('../../database/index');
+const { cloudinary } = require('../../configs/cloudinary');
 
 
 class RoteiroController {
@@ -165,7 +166,8 @@ class RoteiroController {
                   id: item.id,
                   atracao: item.atracao,
                   status: item.status,
-                  horario: item.horario_inicio,
+                  horario_inicio: item.horario_inicio,
+                  horario_fim: item.horario_fim,
                   fotos: item.fotos || [] 
               });
           });
@@ -287,18 +289,50 @@ class RoteiroController {
       return res.status(500).json({ error: 'Erro na busca.' });
     }
   }
-  // --- DELETAR (DELETE /roteiros/:roteiroId) ---
+  /// --- DELETAR (DELETE /roteiros/:roteiroId & roteiroatraçoes/fotos do Cloudinary) ---
   async delete(req, res) {
     try {
       const { roteiroId } = req.params;
       const userId = req.userId;
 
-      const roteiro = await Roteiro.findOne({ where: { id: roteiroId, user_id: userId } });
+      // 1. Busca o roteiro incluindo as atividades para mapear as fotos salvas
+      const roteiro = await Roteiro.findOne({ 
+        where: { id: roteiroId, user_id: userId },
+        include: [{
+          model: RoteiroAtracao,
+          as: 'roteiroAtracoes'
+        }]
+      });
 
       if (!roteiro) return res.status(404).json({ message: 'Roteiro não encontrado.' });
 
+      // 2. Percorre as atividades e remove as fotos do Cloudinary antes de apagar o registro do banco
+      if (roteiro.roteiroAtracoes && roteiro.roteiroAtracoes.length > 0) {
+        for (const atividade of roteiro.roteiroAtracoes) {
+          if (atividade.fotos && atividade.fotos.length > 0) {
+            for (const fotoUrl of atividade.fotos) {
+              try {
+                // Extrai o public_id do Cloudinary da URL da foto
+                const urlParts = fotoUrl.split('/');
+                const arquivoComExtensao = urlParts.pop();
+                const pasta = urlParts.pop();
+                const nomeArquivo = arquivoComExtensao.split('.')[0];
+                const publicId = `${pasta}/${nomeArquivo}`;
+
+                // Remove o arquivo físico armazenado no Cloudinary
+                await cloudinary.uploader.destroy(publicId);
+              } catch (err) {
+                console.error(`Erro ao remover a imagem ${fotoUrl} no Cloudinary:`, err);
+              }
+            }
+          }
+        }
+      }
+
+      // 3. Executa a destruição do roteiro (as tabelas vinculadas serão limpas pelo onDelete: 'CASCADE')
       await roteiro.destroy();
-      return res.status(200).json({ message: 'Roteiro deletado com sucesso.' });
+
+      return res.status(200).json({ message: 'Roteiro e todas as suas atividades/fotos foram removidos com sucesso!' });
 
     } catch (error) {
       console.error('Erro ao deletar roteiro:', error);
