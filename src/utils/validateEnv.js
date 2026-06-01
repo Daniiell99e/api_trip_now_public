@@ -40,11 +40,14 @@ const validateEnv = () => {
   } catch (error) {
     console.error('❌ ERRO CRÍTICO DE CONFIGURAÇÃO (Variáveis de Ambiente):');
     
-    error.errors.forEach(err => {
-      const field = err.path.join('.');
-      console.error(`   -> ${field}: ${err.message}`);
-    });
-
+  if (error instanceof z.ZodError) {
+  error.issues.forEach(err => {
+    const field = err.path.join('.');
+    console.error(`   -> ${field}: ${err.message}`);
+  });
+} else {
+  console.error(error);
+}
     // Registra no arquivo de log físico se o logger já estiver configurado
     if (logger && logger.error) {
       logger.error('Falha na inicialização: Variáveis de ambiente ausentes ou inválidas.', { details: error.errors });
