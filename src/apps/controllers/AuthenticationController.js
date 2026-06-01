@@ -49,15 +49,15 @@ class AuthenticationController {
     // Define os cookies blindados
     res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        secure: true,
+        sameSite: 'strict',
         maxAge: 15 * 60 * 1000 // 15 Minutos curtos contra roubo
     });
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        secure: true,
+        sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias até expirar base
     });
 
@@ -96,8 +96,8 @@ class AuthenticationController {
 
       res.cookie('token', newToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+          secure: true,
+          sameSite: 'strict',
           maxAge: 15 * 60 * 1000 // 15 Minutos renovados
       });
 
@@ -127,8 +127,8 @@ class AuthenticationController {
       // Limpa os cookies no navegador do cliente
       const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        secure: true,
+        sameSite: 'strict',
       };
 
       res.clearCookie('token', cookieOptions);

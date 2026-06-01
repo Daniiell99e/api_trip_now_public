@@ -25,6 +25,6 @@ adminRoutes.post('/users', UserController.create);
 adminRoutes.delete('/users/:id', UserController.deleteUser); 
 
 //  Buscar estatísticas do Dashboard
-adminRoutes.get('/stats', UserController.getDashboardStats);
+// adminRoutes.get('/stats', UserController.getDashboardStats);
 
 module.exports = adminRoutes;

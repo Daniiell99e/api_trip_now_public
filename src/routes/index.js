@@ -6,6 +6,7 @@ const userRoutes = require('./user');
 const roteiroRoutes = require('./roteiro');
 const touristRoutes = require('./tourist');
 const touristAdminRoutes = require('./touristAdmin');
+const adminRoutes = require('./admin');
 
 const routes = new Router();
 
@@ -18,5 +19,6 @@ routes.use('/user', userRoutes);
 routes.use('/roteiros', roteiroRoutes);
 routes.use('/api/tourist', touristRoutes);
 routes.use('/api/admin/tourist', touristAdminRoutes);
+routes.use('/admin', adminRoutes);
 
 module.exports = routes;
