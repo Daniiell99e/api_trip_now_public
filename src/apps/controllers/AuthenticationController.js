@@ -117,7 +117,7 @@ class AuthenticationController {
         try {
           const decoded = jwt.decode(refreshToken);
           if (decoded && decoded.userId) {
-            await redisCache.del(`refresh_token:${decoded.userId}`);
+            await redisCache.set(`refresh_token:${decoded.userId}`, 'revogado', 1);
           }
         } catch (err) {
           console.error("Erro ao tentar revogar token no Redis durante logout:", err);

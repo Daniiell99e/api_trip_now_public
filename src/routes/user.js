@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const UserController = require('../apps/controllers/UserController');
+const UserVerificationController = require('../apps/controllers/UserVerificationController');
 const AuthenticateMiddleware = require('../apps/middlewares/authentication');
 const { storage } = require('../configs/cloudinary');
 // cloudinary ----
@@ -11,8 +12,8 @@ const { createUserSchema, updateUserSchema } = require('../schemas/userSchema');
 const userRoutes = new Router();
 
 // Rotas Públicas (Cadastro/Verificação)
-userRoutes.post('/createuserverify', schemaValidator(createUserSchema), UserController.createUserVerify);
-userRoutes.post('/createuserverifycode', UserController.createUserVerifyCode);
+userRoutes.post('/createuserverify', schemaValidator(createUserSchema), UserVerificationController.sendVerification);
+userRoutes.post('/createuserverifycode', UserVerificationController.verifyAndCreateUser);
 
 userRoutes.patch('/profile-image', AuthenticateMiddleware, upload.single('foto'), UserController.updateProfileImage);
 

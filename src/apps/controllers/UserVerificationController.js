@@ -51,7 +51,15 @@ class UserVerificationController {
                     return res.status(409).send({ message: 'Este e-mail já está cadastrado.' });
                 }
                 
-                const user = await Users.create(userData.data);
+                const user = await Users.create({
+                    name: userData.data.name,
+                    user_name: userData.data.user_name,
+                    email: userData.data.email,
+                    password: userData.data.password,
+                    tipo_usuario: 'usuario',
+                    esta_ativo: true,
+                    id_assinatura: 1
+                });
                 if (!user) {
                     return res.status(400).send({ message: 'Failed to create user' });
                 }
