@@ -46,7 +46,7 @@ class Database {
         //this.connection = new Sequelize(databaseConfig);
         this.connection = new Sequelize({
             ...databaseConfig,
-            logging: console.log, // Habilita o log de queries no terminal para análise de performance
+            // logging: console.log, // Habilita o log de queries no terminal para análise de performance
         });
 
 
