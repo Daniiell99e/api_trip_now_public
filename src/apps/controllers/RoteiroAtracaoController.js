@@ -69,6 +69,7 @@ class RoteiroAtracaoController {
       const novaAtividade = await RoteiroAtracao.create({
         roteiro_id: roteiroId,
         atracao_id: atracaoInstance.id,
+        numero_dia,
         horario_inicio, 
         horario_fim,
         ordem_no_dia: ordem_no_dia || 1,
